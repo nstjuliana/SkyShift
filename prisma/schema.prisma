@@ -18,14 +18,17 @@ model User {
   password      String
   role          UserRole  @default(STUDENT)
   trainingLevel TrainingLevel? @default(STUDENT)
+  temperatureUnit TemperatureUnit @default(FAHRENHEIT)
   emailVerified DateTime?
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  accounts      Account[]
-  sessions      Session[]
+  accounts              Account[]
+  sessions              Session[]
+  studentBookings       Booking[]      @relation("StudentBookings")
+  instructorBookings    Booking[]      @relation("InstructorBookings")
 
   @@map("users")
 }
@@ -85,4 +88,81 @@ enum TrainingLevel {
   PRIVATE
   INSTRUMENT
   COMMERCIAL
+}
+
+// Temperature unit preference
+enum TemperatureUnit {
+  FAHRENHEIT
+  CELSIUS
+}
+
+// Flight status enum
+enum FlightStatus {
+  SCHEDULED
+  AT_RISK
+  CANCELLED
+  RESCHEDULED
+  COMPLETED
+}
+
+// Risk level enum for weather assessment
+enum RiskLevel {
+  LOW
+  MODERATE
+  HIGH
+  EXTREME
+}
+
+// Weather source enum
+enum WeatherSource {
+  OPENWEATHER
+  TOMORROW_IO
+}
+
+// Booking model - represents flight bookings
+model Booking {
+  id                    String      @id @default(cuid())
+  studentId             String
+  instructorId           String
+  scheduledDate          DateTime
+  status                 FlightStatus @default(SCHEDULED)
+  trainingLevel          TrainingLevel
+  duration               Float       // Duration in hours
+  departureLocation      Json        // { name, latitude, longitude, icaoCode? }
+  destinationLocation    Json?       // Optional for cross-country flights
+  cancellationProbability Int?       // 0-100 percentage
+  riskLevel              RiskLevel?
+  notes                  String?     @db.Text
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+
+  // Relations
+  student                User        @relation("StudentBookings", fields: [studentId], references: [id], onDelete: Cascade)
+  instructor             User        @relation("InstructorBookings", fields: [instructorId], references: [id], onDelete: Cascade)
+  weatherLogs            WeatherLog[]
+
+  @@index([studentId])
+  @@index([instructorId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("bookings")
+}
+
+// WeatherLog model - tracks weather checks for bookings
+model WeatherLog {
+  id                    String        @id @default(cuid())
+  bookingId             String
+  weatherData           Json          // Raw API response data
+  weatherSource          WeatherSource
+  cancellationProbability Int?        // Calculated probability (0-100)
+  riskLevel              RiskLevel?
+  conflictDetails        Json?         // Which minimums were violated
+  checkedAt              DateTime      @default(now())
+
+  // Relations
+  booking                Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([checkedAt])
+  @@map("weather_logs")
 }

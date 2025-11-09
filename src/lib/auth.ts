@@ -68,6 +68,7 @@ export const authOptions = {
           name: user.name,
           role: user.role,
           trainingLevel: user.trainingLevel,
+          temperatureUnit: user.temperatureUnit,
         };
       },
     }),
@@ -81,6 +82,7 @@ export const authOptions = {
         token.id = user.id;
         token.role = user.role;
         token.trainingLevel = user.trainingLevel;
+        token.temperatureUnit = user.temperatureUnit;
       }
       return token;
     },
@@ -92,6 +94,7 @@ export const authOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role;
         session.user.trainingLevel = token.trainingLevel;
+        session.user.temperatureUnit = token.temperatureUnit || 'FAHRENHEIT';
       }
       return session;
     },

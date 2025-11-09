@@ -6,7 +6,7 @@
  */
 
 import 'next-auth';
-import type { UserRole, TrainingLevel } from '@prisma/client';
+import type { UserRole, TrainingLevel, TemperatureUnit } from '@prisma/client';
 
 declare module 'next-auth' {
   interface Session {
@@ -16,12 +16,14 @@ declare module 'next-auth' {
       name?: string | null;
       role: UserRole;
       trainingLevel: TrainingLevel | null;
+      temperatureUnit: TemperatureUnit;
     };
   }
 
   interface User {
     role: UserRole;
     trainingLevel: TrainingLevel | null;
+    temperatureUnit: TemperatureUnit;
   }
 }
 
@@ -29,6 +31,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     role: UserRole;
     trainingLevel: TrainingLevel | null;
+    temperatureUnit: TemperatureUnit;
   }
 }
 

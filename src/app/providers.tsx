@@ -22,9 +22,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes
+            staleTime: 30 * 1000, // 30 seconds default (for flight lists)
+            gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
             refetchOnWindowFocus: true,
-            refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
+            retry: 1, // Retry failed requests once
           },
         },
       })

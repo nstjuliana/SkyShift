@@ -176,7 +176,7 @@ class TomorrowClient {
         throw new Error('No forecast intervals available for requested time');
       }
 
-      const closest = intervals.reduce((prev, curr) => {
+      const closest = intervals.reduce((prev: any, curr: any) => {
         const prevTime = new Date(prev.time).getTime();
         const currTime = new Date(curr.time).getTime();
         return Math.abs(currTime - targetTime) < Math.abs(prevTime - targetTime) ? curr : prev;

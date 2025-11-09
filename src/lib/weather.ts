@@ -6,7 +6,8 @@
 import { tomorrowClient } from './weather-tomorrow';
 import { openWeatherClient } from './weather-openweather';
 import type { WeatherData, WeatherResponse } from '@/types/weather';
-import type { WeatherSource, Location } from '@/types/flight';
+import type { Location } from '@/types/flight';
+import type { WeatherSource } from '@prisma/client';
 
 /**
  * In-memory cache for weather responses

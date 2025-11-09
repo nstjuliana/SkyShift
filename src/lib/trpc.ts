@@ -21,9 +21,19 @@ export function getBaseUrl() {
   if (typeof window !== 'undefined') {
     return '';
   }
+  // AWS Amplify
+  if (process.env.AWS_AMPLIFY_URL) {
+    return `https://${process.env.AWS_AMPLIFY_URL}`;
+  }
+  // Vercel
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
+  // Use NEXTAUTH_URL if available (production)
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  // Development fallback
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 

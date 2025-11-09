@@ -20,9 +20,14 @@ import { Button } from '@/components/ui/button';
  * @returns Rendered upcoming flights widget
  */
 export function UpcomingFlights() {
-  const { data: flights, isLoading } = trpc.flights.list.useQuery({
-    limit: 5,
-  });
+  const { data: flights, isLoading } = trpc.flights.list.useQuery(
+    {
+      limit: 5,
+    },
+    {
+      staleTime: 30 * 1000, // 30 seconds - flight lists update frequently
+    }
+  );
 
   if (isLoading) {
     return (

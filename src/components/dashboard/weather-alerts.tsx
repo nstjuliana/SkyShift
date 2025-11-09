@@ -22,10 +22,16 @@ import type { Location } from '@/types/flight';
  * @returns Rendered weather alerts widget
  */
 export function WeatherAlerts() {
-  const { data: flights, isLoading } = trpc.flights.list.useQuery({
-    status: 'AT_RISK',
-    limit: 10,
-  });
+  const { data: flights, isLoading } = trpc.flights.list.useQuery(
+    {
+      status: 'AT_RISK',
+      limit: 10,
+    },
+    {
+      staleTime: 30 * 1000, // 30 seconds - weather status can change frequently
+      refetchInterval: 60 * 1000, // Refetch every minute for real-time updates
+    }
+  );
 
   if (isLoading) {
     return (

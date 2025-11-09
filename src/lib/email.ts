@@ -30,8 +30,12 @@ export const FROM_EMAIL = (() => {
 
 /**
  * Application URL for email links
+ * Uses NEXTAUTH_URL (primary), falls back to NEXT_PUBLIC_APP_URL or localhost for development
  */
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+export const APP_URL = 
+  process.env.NEXTAUTH_URL || 
+  process.env.NEXT_PUBLIC_APP_URL || 
+  (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000');
 
 /**
  * Email send result

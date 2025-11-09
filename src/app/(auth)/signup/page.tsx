@@ -1,35 +1,37 @@
 /**
- * @fileoverview Login page component
- * @module app/(auth)/login/page
+ * @fileoverview Signup/Registration page component
+ * @module app/(auth)/signup/page
  */
 
 'use client';
 
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { trpc } from '@/lib/trpc';
 import Link from 'next/link';
 
 /**
- * Login page component
+ * Signup page component
  * 
- * @returns Rendered login page
+ * @returns Rendered signup page
  */
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  // Check for registration success message
-  useEffect(() => {
-    if (searchParams.get('registered') === 'true') {
-      setSuccess('Account created successfully! Please sign in.');
-    }
-  }, [searchParams]);
+  const signup = trpc.users.register.useMutation({
+    onSuccess: () => {
+      // Redirect to login page with success message
+      router.push('/login?registered=true');
+    },
+    onError: (err) => {
+      setError(err.message || 'Failed to create account. Please try again.');
+    },
+  });
 
   /**
    * Handle form submission
@@ -39,26 +41,28 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('Invalid email or password');
-      } else {
-        router.push('/dashboard');
-        router.refresh();
-      }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
+    // Client-side validation
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
     }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    signup.mutate({
+      email,
+      password,
+      name: name || undefined,
+    });
   };
 
   return (
@@ -66,24 +70,34 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Sign in to SkyShift
+            Create your SkyShift account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Weather Cancellation & AI Rescheduling
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {success && (
-            <div className="rounded-md bg-green-50 p-4">
-              <p className="text-sm text-green-800">{success}</p>
-            </div>
-          )}
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
           <div className="space-y-4 rounded-md shadow-sm">
+            <div>
+              <label htmlFor="name" className="sr-only">
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                placeholder="Full Name (optional)"
+              />
+            </div>
             <div>
               <label htmlFor="email" className="sr-only">
                 Email address
@@ -108,12 +122,29 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
+                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                placeholder="Password"
+                placeholder="Password (min. 8 characters)"
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="sr-only">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                placeholder="Confirm Password"
               />
             </div>
           </div>
@@ -121,17 +152,18 @@ export default function LoginPage() {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={signup.isPending}
               className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {signup.isPending ? 'Creating account...' : 'Create account'}
             </button>
           </div>
+
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                Sign up
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                Sign in
               </Link>
             </p>
           </div>

@@ -7,7 +7,9 @@ import { getServerSession } from '@/lib/auth-server';
 import { redirect } from 'next/navigation';
 import { UpcomingFlights } from '@/components/dashboard/upcoming-flights';
 import { WeatherAlerts } from '@/components/dashboard/weather-alerts';
+import { PendingReschedules } from '@/components/dashboard/pending-reschedules';
 import { DashboardWeatherActions } from '@/components/dashboard/dashboard-weather-actions';
+import { StatCards } from '@/components/dashboard/stat-cards';
 
 /**
  * Dashboard home page component
@@ -35,9 +37,12 @@ export default async function DashboardPage() {
         <DashboardWeatherActions />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <StatCards />
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <UpcomingFlights />
         <WeatherAlerts />
+        <PendingReschedules />
       </div>
     </div>
   );

@@ -166,3 +166,66 @@ model WeatherLog {
   @@index([checkedAt])
   @@map("weather_logs")
 }
+
+// Reschedule tracking model
+model Reschedule {
+  id                    String            @id @default(cuid())
+  originalBookingId     String
+  proposedDate          DateTime
+  proposedDuration      Float
+  aiReasoning           String?           @db.Text
+  weatherForecast       Json?
+  status                RescheduleStatus  @default(PENDING_STUDENT)
+  studentConfirmedAt    DateTime?
+  instructorConfirmedAt DateTime?
+  rejectionReason       String?           @db.Text
+  createdAt             DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  @@index([originalBookingId])
+  @@index([status])
+  @@map("reschedules")
+}
+
+enum RescheduleStatus {
+  PENDING_STUDENT
+  PENDING_INSTRUCTOR
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// Notification tracking model
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  type      NotificationType
+  subject   String
+  content   Json
+  status    NotificationStatus  @default(SENT)
+  metadata  Json?
+  sentAt    DateTime            @default(now())
+  readAt    DateTime?
+
+  @@index([userId])
+  @@index([sentAt])
+  @@index([type])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  WEATHER_CONFLICT
+  BOOKING_CONFIRMATION
+  RESCHEDULE_REQUEST
+  RESCHEDULE_APPROVED
+  RESCHEDULE_REJECTED
+  CANCELLATION
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  READ
+}

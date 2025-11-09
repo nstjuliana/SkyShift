@@ -5,6 +5,7 @@
 
 import { db } from '@/lib/db';
 import { TRPCError } from '@trpc/server';
+import { notificationService } from './notification-service';
 import type { CreateFlightInput, UpdateFlightInput, FlightListOptions } from '@/types/flight';
 import type { FlightStatus, UserRole } from '@prisma/client';
 
@@ -256,6 +257,14 @@ class FlightService {
           },
         },
       });
+
+      // Send confirmation email
+      try {
+        await notificationService.sendBookingConfirmation(flight as any);
+      } catch (error) {
+        console.error('[Flight Service] Failed to send confirmation email:', error);
+        // Don't throw - email failure shouldn't break booking creation
+      }
 
       return flight;
     } catch (error) {

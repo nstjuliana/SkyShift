@@ -17,6 +17,8 @@ export interface Location {
   longitude: number;
   /** ICAO airport code (if applicable) */
   icaoCode?: string;
+  /** Primary runway heading in degrees (0-360). Used for crosswind calculations. */
+  runwayHeading?: number;
 }
 
 /**

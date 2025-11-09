@@ -49,6 +49,7 @@ export function FlightForm({
 }: FlightFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const utils = trpc.useUtils();
   const [selectedInstructor, setSelectedInstructor] = useState(defaultInstructorId || '');
   const defaultLocation: Location = {
     name: 'KJFK - John F. Kennedy International',
@@ -84,6 +85,9 @@ export function FlightForm({
 
   const createFlight = trpc.flights.create.useMutation({
     onSuccess: () => {
+      // Invalidate flights list query to refresh dashboard
+      utils.flights.list.invalidate();
+      
       toast({
         title: 'Flight created',
         description: 'Your flight booking has been created successfully.',
@@ -92,6 +96,7 @@ export function FlightForm({
         onSuccess();
       } else {
         router.push('/dashboard');
+        router.refresh(); // Refresh server components
       }
     },
     onError: (error) => {

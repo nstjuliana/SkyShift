@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { EmptyState } from '@/components/common/empty-state';
 import Link from 'next/link';
-import { format } from 'date-fns';
+import { format, differenceInHours } from 'date-fns';
+import { AlertTriangle } from 'lucide-react';
 import type { Location } from '@/types/flight';
 
 /**
@@ -77,6 +78,9 @@ export function WeatherAlerts() {
           <div className="space-y-3">
             {atRiskFlights.map((flight) => {
               const departureLocation = flight.departureLocation as Location;
+              const hoursUntilFlight = differenceInHours(new Date(flight.scheduledDate), new Date());
+              const isUrgent = hoursUntilFlight < 24 && hoursUntilFlight >= 0;
+              
               return (
                 <Link key={flight.id} href={`/dashboard/flights/${flight.id}`}>
                   <div
@@ -84,13 +88,21 @@ export function WeatherAlerts() {
                       flight.riskLevel === 'EXTREME' || flight.riskLevel === 'HIGH'
                         ? 'border-red-500 bg-red-50 dark:bg-red-950'
                         : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950'
-                    }`}
+                    } ${isUrgent ? 'ring-2 ring-orange-500 ring-offset-2' : ''}`}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-semibold">
-                          {format(new Date(flight.scheduledDate), 'MMM dd, h:mm a')}
-                        </p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-semibold">
+                            {format(new Date(flight.scheduledDate), 'MMM dd, h:mm a')}
+                          </p>
+                          {isUrgent && (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Urgent
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {formatLocation(departureLocation)}
                         </p>
@@ -106,6 +118,11 @@ export function WeatherAlerts() {
                       <span className="text-muted-foreground">
                         {flight.trainingLevel}
                       </span>
+                      {isUrgent && (
+                        <span className="text-orange-600 font-medium">
+                          {hoursUntilFlight}h until flight
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>

@@ -17,6 +17,8 @@ export interface WeatherMinimums {
   maxWindSpeed: number;
   /** Maximum crosswind component in knots */
   maxCrosswind: number;
+  /** Maximum tailwind component in knots */
+  maxTailwind: number;
   /** Whether IMC (Instrument Meteorological Conditions) are acceptable */
   allowIMC: boolean;
 }
@@ -37,6 +39,7 @@ export const WEATHER_MINIMUMS: Record<TrainingLevel, WeatherMinimums> = {
     ceiling: 3000, // 3000 feet AGL minimum
     maxWindSpeed: 10, // 10 knots maximum
     maxCrosswind: 5, // 5 knots maximum crosswind
+    maxTailwind: 3, // 3 knots maximum tailwind
     allowIMC: false, // No instrument conditions
   },
 
@@ -50,6 +53,7 @@ export const WEATHER_MINIMUMS: Record<TrainingLevel, WeatherMinimums> = {
     ceiling: 1000, // 1000 feet AGL minimum
     maxWindSpeed: 20, // 20 knots maximum
     maxCrosswind: 12, // 12 knots maximum crosswind
+    maxTailwind: 5, // 5 knots maximum tailwind
     allowIMC: false,
   },
 
@@ -63,6 +67,7 @@ export const WEATHER_MINIMUMS: Record<TrainingLevel, WeatherMinimums> = {
     ceiling: null, // No ceiling restriction
     maxWindSpeed: 30, // 30 knots maximum
     maxCrosswind: 15, // 15 knots maximum crosswind
+    maxTailwind: 10, // 10 knots maximum tailwind
     allowIMC: true,
   },
 
@@ -76,6 +81,7 @@ export const WEATHER_MINIMUMS: Record<TrainingLevel, WeatherMinimums> = {
     ceiling: null,
     maxWindSpeed: 35,
     maxCrosswind: 18,
+    maxTailwind: 10, // 10 knots maximum tailwind
     allowIMC: true,
   },
 };

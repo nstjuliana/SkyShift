@@ -9,6 +9,7 @@ import { flightsRouter } from './flights';
 import { weatherRouter } from './weather';
 import { airportsRouter } from './airports';
 import { usersRouter } from './users';
+import { rescheduleRouter } from './reschedule';
 
 /**
  * Health check procedure
@@ -31,6 +32,7 @@ export const appRouter = router({
   weather: weatherRouter,
   airports: airportsRouter,
   users: usersRouter,
+  reschedule: rescheduleRouter,
 });
 
 export type AppRouter = typeof appRouter;

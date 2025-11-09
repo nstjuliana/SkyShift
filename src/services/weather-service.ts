@@ -7,6 +7,8 @@ import { db } from '@/lib/db';
 import { getWeatherForFlight } from '@/lib/weather';
 import { evaluateWeatherSafety } from './weather-validation';
 import { calculateCancellationProbability } from './cancellation-calculator';
+import { notificationService } from './notification-service';
+import { airportDBClient } from '@/lib/airportdb';
 import type { Location } from '@/types/flight';
 import type { WeatherCondition } from '@/types/weather';
 
@@ -41,13 +43,42 @@ class WeatherService {
     }
 
     const trainingLevel = booking.trainingLevel;
-    const departureLocation = booking.departureLocation as Location;
+    let departureLocation = booking.departureLocation as Location;
+    
+    // Fetch runway heading if missing but ICAO code is available
+    if (!departureLocation.runwayHeading && departureLocation.icaoCode) {
+      try {
+        console.log('[Weather Service] Runway heading missing, fetching for:', departureLocation.icaoCode);
+        const airportData = await airportDBClient.getAirportByICAO(departureLocation.icaoCode);
+        if (airportData?.runwayHeading) {
+          // Update departure location with runway heading
+          departureLocation = {
+            ...departureLocation,
+            runwayHeading: airportData.runwayHeading,
+          };
+          // Update the booking in database with runway heading
+          await db.booking.update({
+            where: { id: bookingId },
+            data: {
+              departureLocation: departureLocation as any,
+            },
+          });
+          console.log('[Weather Service] Fetched and stored runway heading:', airportData.runwayHeading);
+        }
+      } catch (error) {
+        console.warn('[Weather Service] Failed to fetch runway heading:', error);
+        // Continue with existing location data
+      }
+    }
+    
+    const runwayHeading = departureLocation.runwayHeading;
 
     console.log('[Weather Service] Checking weather for flight:', {
       bookingId,
       departureLocation,
       scheduledDate: booking.scheduledDate.toISOString(),
       trainingLevel,
+      runwayHeading,
     });
 
     // Get weather for flight
@@ -62,10 +93,11 @@ class WeatherService {
       weatherData: JSON.stringify(weatherResponse.data, null, 2),
     });
 
-    // Evaluate weather safety
+    // Evaluate weather safety with runway heading if available
     const evaluation = evaluateWeatherSafety(
       weatherResponse.data,
-      trainingLevel
+      trainingLevel,
+      runwayHeading
     );
 
     console.log('[Weather Service] Weather evaluation:', {
@@ -105,6 +137,22 @@ class WeatherService {
         cancellationProbability: probabilityResult.probability,
         riskLevel: probabilityResult.riskLevel,
       },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        instructor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
 
     // Prepare weather data for storage - convert Date objects to ISO strings
@@ -133,6 +181,22 @@ class WeatherService {
         } as any,
       },
     });
+
+    // Send notification email if conflict detected
+    if (newStatus === 'AT_RISK') {
+      try {
+        await notificationService.sendWeatherConflictEmail(
+          updatedBooking as any,
+          {
+            violations: evaluation.violations,
+            reasons: probabilityResult.reasons,
+          }
+        );
+      } catch (error) {
+        console.error('[Weather Service] Failed to send notification email:', error);
+        // Don't throw - notification failure shouldn't break weather check
+      }
+    }
 
     return {
       booking: updatedBooking,

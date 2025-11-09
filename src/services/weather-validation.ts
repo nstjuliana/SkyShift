@@ -24,11 +24,13 @@ export interface WeatherEvaluation {
  * 
  * @param weather - Weather data to evaluate
  * @param trainingLevel - Pilot training level
+ * @param runwayHeading - Optional runway heading in degrees (0-360). If not provided, uses conservative worst-case estimate.
  * @returns Evaluation result with safety status and violations
  */
 export function evaluateWeatherSafety(
   weather: WeatherData,
-  trainingLevel: TrainingLevel
+  trainingLevel: TrainingLevel,
+  runwayHeading?: number
 ): WeatherEvaluation {
   const minimums = WEATHER_MINIMUMS[trainingLevel];
   const violations: string[] = [];
@@ -71,16 +73,64 @@ export function evaluateWeatherSafety(
     severityScore += 20;
   }
 
-  // Check crosswind (simplified - assumes 90 degree crosswind component)
-  // Crosswind = windSpeed * sin(windDirection - runwayHeading)
-  // For simplicity, we'll use a conservative estimate
-  const estimatedCrosswind = weather.windSpeed * 0.7; // Assume 45 degree angle
-  if (estimatedCrosswind > minimums.maxCrosswind) {
+  // Check crosswind AND headwind/tailwind using proper trig
+  let crosswindKt = 0;
+  let headwindKt = 0;    // Positive = headwind, negative = tailwind component
+  let tailwindKt = 0;
+
+  if (
+    runwayHeading !== undefined &&
+    weather.windDirection !== undefined &&
+    weather.windSpeed !== undefined
+  ) {
+    // Angle difference and normalization (0–180°)
+    let angleDiff = Math.abs(weather.windDirection - runwayHeading);
+    angleDiff = angleDiff <= 180 ? angleDiff : 360 - angleDiff; // Cleaner than if()
+
+    const angleDiffRad = angleDiff * (Math.PI / 180);
+
+    // Full wind components
+    const speed = weather.windSpeed;
+    crosswindKt = Math.abs(speed * Math.sin(angleDiffRad));           // Always magnitude
+    headwindKt = speed * Math.cos(angleDiffRad);                     // Signed: +head / -tail
+
+    // Tailwind is the negative part
+    tailwindKt = headwindKt < 0 ? -headwindKt : 0;
+  } else {
+    // Conservative fallbacks if any data missing
+    crosswindKt = weather.windSpeed ?? 0;     // Assume full crosswind
+    tailwindKt = weather.windSpeed ?? 0;      // Assume full tailwind (worst for limits)
+    headwindKt = 0;
+  }
+
+  // === Crosswind Check ===
+  if (crosswindKt > minimums.maxCrosswind) {
     violations.push(
-      `Estimated crosswind ${estimatedCrosswind.toFixed(1)} kt exceeds maximum of ${minimums.maxCrosswind} kt`
+      `Crosswind ${crosswindKt.toFixed(1)} kt exceeds maximum of ${minimums.maxCrosswind} kt`
     );
-    const violationSeverity = ((estimatedCrosswind - minimums.maxCrosswind) / minimums.maxCrosswind) * 50;
-    severityScore += violationSeverity;
+    const violationSeverity = ((crosswindKt - minimums.maxCrosswind) / minimums.maxCrosswind) * 50;
+    severityScore += Math.max(violationSeverity, 0);
+  }
+
+  // === Tailwind Check ===
+  if (tailwindKt > minimums.maxTailwind) {
+    violations.push(
+      `Tailwind ${tailwindKt.toFixed(1)} kt exceeds maximum of ${minimums.maxTailwind} kt`
+    );
+    const violationSeverity = ((tailwindKt - minimums.maxTailwind) / minimums.maxTailwind) * 50;
+    severityScore += Math.max(violationSeverity, 0);
+  }
+
+  // Optional: Enhanced reporting (e.g., for UI or logs)
+  if (runwayHeading !== undefined && weather.windDirection !== undefined) {
+    const crosswindSide = headwindKt >= 0
+      ? (weather.windDirection - runwayHeading + 360) % 360 <= 180 ? 'left' : 'right'
+      : (weather.windDirection - runwayHeading + 360) % 360 <= 180 ? 'right' : 'left';
+
+    console.log(`Wind: ${weather.windSpeed} kt @ ${weather.windDirection}° → ` +
+      `Crosswind: ${crosswindKt.toFixed(1)} kt (from ${crosswindSide}), ` +
+      `Headwind: ${headwindKt > 0 ? headwindKt.toFixed(1) : 0} kt, ` +
+      `Tailwind: ${tailwindKt.toFixed(1)} kt`);
   }
 
   // Check IMC conditions (if not allowed)

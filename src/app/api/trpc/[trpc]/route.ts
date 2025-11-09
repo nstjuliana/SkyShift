@@ -1,0 +1,22 @@
+/**
+ * @fileoverview tRPC API route handler
+ * @module app/api/trpc/[trpc]/route
+ */
+
+import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { appRouter } from '@/server/routers';
+import { createContext } from '@/server/context';
+
+/**
+ * tRPC request handler
+ */
+const handler = (req: Request) =>
+  fetchRequestHandler({
+    endpoint: '/api/trpc',
+    req,
+    router: appRouter,
+    createContext,
+  });
+
+export { handler as GET, handler as POST };
+

@@ -130,7 +130,7 @@ See `.env.example` for a complete list of environment variables. Key variables:
 **Required:**
 - `DATABASE_URL` - PostgreSQL connection string (Supabase format: `postgresql://user:password@host:5432/dbname?sslmode=require`)
 - `NEXTAUTH_SECRET` - Generate with: `openssl rand -base64 32`
-- `NEXTAUTH_URL` - Application URL (`http://localhost:3000` for dev, production URL for prod)
+- `NEXTAUTH_URL` - Application URL (`http://localhost:3000` for dev, full Amplify app URL for prod, e.g., `https://main.d2q7ne5hrd77na.amplifyapp.com`)
 - `OPENAI_API_KEY` - OpenAI API key for AI rescheduling
 - `OPENWEATHER_API_KEY` - OpenWeatherMap API key
 - `RESEND_API_KEY` - Resend email API key

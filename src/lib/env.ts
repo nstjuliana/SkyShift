@@ -9,12 +9,13 @@ import { z } from 'zod';
 
 /**
  * Environment variable schema
+ * During build time, some variables may not be available, so we make them optional
  */
 const envSchema = z.object({
-  DATABASE_URL: z.string().url().min(1),
+  DATABASE_URL: z.string().url().min(1).optional(),
   AUTH_SECRET: z.string().min(1).optional(),
   NEXTAUTH_SECRET: z.string().min(1).optional(),
-  NEXTAUTH_URL: z.string().url().min(1),
+  NEXTAUTH_URL: z.string().url().min(1).optional(),
   // Optional for Phase 0, required for Phase 1+
   OPENAI_API_KEY: z.string().optional(),
   OPENWEATHER_API_KEY: z.string().optional(),
@@ -30,8 +31,9 @@ const envSchema = z.object({
 
 /**
  * Validated environment variables
+ * Uses safeParse to avoid throwing during build if variables are missing
  */
-export const env = envSchema.parse({
+const parseResult = envSchema.safeParse({
   DATABASE_URL: process.env.DATABASE_URL,
   AUTH_SECRET: process.env.AUTH_SECRET,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
@@ -47,4 +49,10 @@ export const env = envSchema.parse({
   AWS_REGION: process.env.AWS_REGION,
   AWS_S3_BUCKET: process.env.AWS_S3_BUCKET,
 });
+
+/**
+ * Exported environment variables
+ * Returns parsed env or empty object if validation fails (e.g., during build)
+ */
+export const env = parseResult.success ? parseResult.data : {};
 

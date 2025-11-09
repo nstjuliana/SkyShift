@@ -52,14 +52,16 @@ frontend:
 
 If auto-detection fails, create `amplify.yml` in the project root with the above content.
 
-### Step 3: Configure Environment Variables
+### Step 3: Configure Environment Variables (First Deployment)
 
-In Amplify Console → App Settings → Environment variables, add:
+**Important:** You won't know your Amplify app URL until after the first deployment. Follow this two-step process:
+
+**For First Deployment** - In Amplify Console → App Settings → Environment variables, add:
 
 **Required:**
 - `DATABASE_URL` - Supabase PostgreSQL connection string
 - `NEXTAUTH_SECRET` - Generate with: `openssl rand -base64 32`
-- `NEXTAUTH_URL` - Your Amplify app URL (used for authentication and email links)
+- `NEXTAUTH_URL` - **Leave empty or use placeholder** `https://placeholder.amplifyapp.com` (we'll update this after deployment)
 - `OPENAI_API_KEY` - OpenAI API key
 - `OPENWEATHER_API_KEY` - OpenWeatherMap API key
 - `RESEND_API_KEY` - Resend API key
@@ -68,15 +70,29 @@ In Amplify Console → App Settings → Environment variables, add:
 **Optional:**
 - `TOMORROW_IO_API_KEY` - Tomorrow.io API key
 - `AIRPORTDB_API_KEY` - AirportDB API key
-- `NEXT_PUBLIC_APP_URL` - Public app URL (fallback if NEXTAUTH_URL not set)
 
-### Step 4: Deploy
+### Step 4: Deploy (First Time)
 
 1. Click "Save and deploy"
 2. Wait for build to complete (5-10 minutes)
-3. Note your app URL: `https://[branch].[app-id].amplifyapp.com`
+3. **Note your app URL** from the Amplify Console: `https://[branch].[app-id].amplifyapp.com`
 
-### Step 5: Verify Deployment
+### Step 5: Update NEXTAUTH_URL (After First Deployment)
+
+1. Go to Amplify Console → App Settings → Environment variables
+2. Find `NEXTAUTH_URL` and update it to your **full Amplify app URL** from Step 4
+   - Example: `https://main.d2q7ne5hrd77na.amplifyapp.com`
+   - **Important:** Include the `https://` protocol and the full domain
+3. Click "Save"
+4. Amplify will automatically trigger a new deployment with the updated URL
+5. Wait for the redeployment to complete
+
+**Note:** 
+- `NEXTAUTH_URL` must be the exact URL where your app is deployed (the Amplify app URL)
+- The app will work without `NEXTAUTH_URL` set initially, but authentication and email links won't work correctly until you update it
+- After updating, all authentication flows and email links will use this URL
+
+### Step 6: Verify Deployment
 
 1. Visit your Amplify app URL
 2. Test login functionality

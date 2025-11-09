@@ -9,17 +9,12 @@ import { authOptions } from '@/lib/auth';
 /**
  * NextAuth handler instance
  */
-const { handlers, auth } = NextAuth(authOptions);
-
-/**
- * Server-side auth function
- * Use this in Server Components and API routes
- */
-export { auth };
+const { handlers } = NextAuth(authOptions);
 
 /**
  * Next.js route handlers
  * NextAuth v5 beta exports handlers object with GET and POST
+ * Note: Only GET and POST can be exported from route handlers
  */
 export const { GET, POST } = handlers;
 

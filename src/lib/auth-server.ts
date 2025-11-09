@@ -2,10 +2,16 @@
  * @fileoverview Server-side auth helper for NextAuth v5
  * @module lib/auth-server
  *
- * Re-exports auth function for server-side usage
+ * Creates auth instance for server-side usage
  */
 
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+import NextAuth from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+/**
+ * NextAuth instance for server-side usage
+ */
+const { auth } = NextAuth(authOptions);
 
 /**
  * Server-side auth function

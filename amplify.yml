@@ -4,6 +4,7 @@ frontend:
     preBuild:
       commands:
         - npm ci
+        # Prisma client will be generated automatically via postinstall script
     build:
       commands:
         - npm run build

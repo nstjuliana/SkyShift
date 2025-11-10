@@ -43,7 +43,7 @@ class WeatherService {
     }
 
     const trainingLevel = booking.trainingLevel;
-    let departureLocation = booking.departureLocation as Location;
+    let departureLocation = booking.departureLocation as unknown as Location;
     
     // Fetch runway heading if missing but ICAO code is available
     if (!departureLocation.runwayHeading && departureLocation.icaoCode) {

@@ -28,7 +28,7 @@ export function PendingReschedules() {
   const { data: pendingReschedules, isLoading } = trpc.reschedule.listPending.useQuery(
     undefined,
     { enabled: isInstructor }
-  );
+  ) as { data: any[] | undefined; isLoading: boolean };
 
   if (!isInstructor) {
     return null;

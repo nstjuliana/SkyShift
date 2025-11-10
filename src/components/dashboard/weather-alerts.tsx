@@ -13,7 +13,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import Link from 'next/link';
 import { format, differenceInHours } from 'date-fns';
 import { AlertTriangle } from 'lucide-react';
-import type { Location } from '@/types/flight';
+import type { Location, SerializedFlight } from '@/types/flight';
 
 /**
  * Weather alerts widget component
@@ -31,7 +31,7 @@ export function WeatherAlerts() {
       staleTime: 30 * 1000, // 30 seconds - weather status can change frequently
       refetchInterval: 60 * 1000, // Refetch every minute for real-time updates
     }
-  );
+  ) as { data: SerializedFlight[] | undefined; isLoading: boolean };
 
   if (isLoading) {
     return (

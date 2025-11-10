@@ -15,6 +15,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import Link from 'next/link';
 import { useState } from 'react';
 import type { FlightStatus } from '@prisma/client';
+import type { SerializedFlight } from '@/types/flight';
 
 /**
  * Flights list page component
@@ -26,7 +27,7 @@ export default function FlightsPage() {
 
   const { data: flights, isLoading, error } = trpc.flights.list.useQuery({
     status: statusFilter === 'ALL' ? undefined : statusFilter,
-  });
+  }) as { data: SerializedFlight[] | undefined; isLoading: boolean; error: any };
 
   return (
     <div className="space-y-6">

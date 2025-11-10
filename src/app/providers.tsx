@@ -23,7 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         defaultOptions: {
           queries: {
             staleTime: 30 * 1000, // 30 seconds default (for flight lists)
-            gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+            cacheTime: 5 * 60 * 1000, // 5 minutes
             refetchOnWindowFocus: true,
             retry: 1, // Retry failed requests once
           },

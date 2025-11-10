@@ -20,6 +20,8 @@ export const authOptions = {
     (process.env.NODE_ENV === 'development'
       ? 'development-secret-key-minimum-32-characters-long-for-nextauth'
       : undefined),
+  // Trust host for development and when AUTH_URL is not set
+  trustHost: true,
   // Note: Credentials provider requires JWT strategy, not database sessions
   session: {
     strategy: 'jwt' as const,

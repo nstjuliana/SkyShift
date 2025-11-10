@@ -57,7 +57,7 @@ class AIRescheduleService {
 
     const trainingLevel = booking.trainingLevel;
     const minimums = WEATHER_MINIMUMS[trainingLevel];
-    const departureLocation = booking.departureLocation as Location;
+    const departureLocation = booking.departureLocation as unknown as Location;
 
     // Get weather forecasts for next 7 days (sample 3-4 potential dates)
     const now = new Date();

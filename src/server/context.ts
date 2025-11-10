@@ -5,13 +5,14 @@
 
 import { getServerSession } from '@/lib/auth-server';
 import { db } from '@/lib/db';
+import type { Session } from 'next-auth';
 
 /**
  * Context type for tRPC procedures
  */
 export interface Context {
   db: typeof db;
-  session: Awaited<ReturnType<typeof getServerSession>>;
+  session: Session | null;
 }
 
 /**

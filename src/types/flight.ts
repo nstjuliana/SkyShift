@@ -39,6 +39,39 @@ export interface Flight extends Booking {
 }
 
 /**
+ * Serialized Flight type for client-side use
+ * Dates are serialized as strings when coming from tRPC/API
+ * Defined as a standalone interface to avoid deep type inference issues
+ */
+export interface SerializedFlight {
+  id: string;
+  studentId: string;
+  instructorId: string;
+  scheduledDate: string | Date;
+  status: FlightStatus;
+  trainingLevel: TrainingLevel;
+  duration: number;
+  departureLocation: unknown; // JSON type from Prisma
+  destinationLocation: unknown | null; // JSON type from Prisma
+  cancellationProbability: number | null;
+  riskLevel: RiskLevel | null;
+  notes: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  student: {
+    id: string;
+    name: string | null;
+    email: string;
+    trainingLevel: TrainingLevel | null;
+  };
+  instructor: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
+}
+
+/**
  * Input for creating a new flight booking
  * Note: studentId is not included - it comes from the authenticated session
  */

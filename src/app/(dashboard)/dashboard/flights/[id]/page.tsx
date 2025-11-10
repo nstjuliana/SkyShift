@@ -17,7 +17,7 @@ import { RescheduleOptions } from '@/components/flights/reschedule-options';
 import { RescheduleConfirmationDialog } from '@/components/flights/reschedule-confirmation-dialog';
 import { RescheduleApproval } from '@/components/flights/reschedule-approval';
 import { format } from 'date-fns';
-import type { Location } from '@/types/flight';
+import type { Location, SerializedFlight } from '@/types/flight';
 import type { RescheduleOption } from '@/types/reschedule';
 import { ArrowLeft, MapPin, Calendar, Clock, User, AlertTriangle, Cloud, Wind, Eye, Thermometer, RefreshCw, Sparkles } from 'lucide-react';
 import Link from 'next/link';
@@ -46,10 +46,10 @@ export default function FlightDetailPage() {
   const [selectedOption, setSelectedOption] = React.useState<RescheduleOption | null>(null);
   const [showConfirmationDialog, setShowConfirmationDialog] = React.useState(false);
 
-  const { data: flight, isLoading, error, refetch } = trpc.flights.getById.useQuery(
+  const { data: flight, isLoading, error, refetch } = (trpc.flights.getById.useQuery as any)(
     { id: flightId },
     { enabled: !!flightId }
-  );
+  ) as { data: SerializedFlight | undefined; isLoading: boolean; error: any; refetch: () => void };
 
   const { data: weatherLog, refetch: refetchWeather, isLoading: isLoadingWeather } = trpc.weather.getFlightWeather.useQuery(
     { bookingId: flightId },
@@ -103,8 +103,8 @@ export default function FlightDetailPage() {
     },
   });
 
-  const respondToReschedule = trpc.reschedule.respondToReschedule.useMutation({
-    onSuccess: (data) => {
+  const respondToReschedule = (trpc.reschedule.respondToReschedule.useMutation as any)({
+    onSuccess: (data: { approved: boolean }) => {
       toast({
         title: data.approved ? 'Reschedule Approved' : 'Reschedule Rejected',
         description: data.approved
@@ -114,7 +114,7 @@ export default function FlightDetailPage() {
       setPendingReschedule(null);
       refetch();
     },
-    onError: (error) => {
+    onError: (error: { message?: string }) => {
       toast({
         title: 'Action Failed',
         description: error.message || 'Failed to process reschedule response',
@@ -124,13 +124,13 @@ export default function FlightDetailPage() {
   });
 
   // Fetch pending reschedule for this flight (if instructor)
-  const { data: pendingRescheduleData, refetch: refetchPendingReschedule } = trpc.reschedule.listPending.useQuery(
+  const { data: pendingRescheduleData, refetch: refetchPendingReschedule } = (trpc.reschedule.listPending.useQuery as any)(
     undefined,
     {
       enabled: isInstructor,
-      select: (data) => {
+      select: (data: any[]) => {
         // Find reschedule for this specific flight
-        return data.find((r) => r.booking?.id === flightId) || null;
+        return data.find((r: any) => r.booking?.id === flightId) || null;
       },
     }
   );
@@ -180,8 +180,8 @@ export default function FlightDetailPage() {
   const [runwayHeading, setRunwayHeading] = React.useState<number | undefined>(undefined);
   
   // Get departure location ICAO code for airport query (safe to access even if flight is undefined)
-  const departureIcaoCode = flight?.departureLocation ? (flight.departureLocation as Location).icaoCode : undefined;
-  const storedRunwayHeading = flight?.departureLocation ? (flight.departureLocation as Location).runwayHeading : undefined;
+  const departureIcaoCode = flight?.departureLocation ? (flight.departureLocation as unknown as Location).icaoCode : undefined;
+  const storedRunwayHeading = flight?.departureLocation ? (flight.departureLocation as unknown as Location).runwayHeading : undefined;
   
   // Query to fetch airport data if runway heading is missing (must be before early returns)
   const { data: airportData } = trpc.airports.getByICAO.useQuery(
@@ -231,14 +231,14 @@ export default function FlightDetailPage() {
     );
   }
 
-  const departureLocation = flight.departureLocation as Location;
-  const destinationLocation = flight.destinationLocation as Location | undefined;
+  const departureLocation = flight.departureLocation as unknown as Location;
+  const destinationLocation = flight.destinationLocation as unknown as Location | undefined;
   
   // Use stored runway heading if available, otherwise use state
   const effectiveRunwayHeading = storedRunwayHeading || runwayHeading;
   
   // Get weather data from latest weather log or from flight's weatherLogs
-  const latestWeatherLog = weatherLog || (flight.weatherLogs && flight.weatherLogs[0]) || null;
+  const latestWeatherLog = weatherLog || ((flight as any).weatherLogs && (flight as any).weatherLogs[0]) || null;
   
   // Parse weatherData - it's stored as JSON in the database
   // Use fresh weather data from mutation if available, otherwise use from log
@@ -327,7 +327,7 @@ export default function FlightDetailPage() {
     if (!selectedOption) return;
     acceptOption.mutate({
       bookingId: flightId,
-      optionIndex: selectedOption.index,
+      rescheduleData: selectedOption,
     });
   };
 

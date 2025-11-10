@@ -12,6 +12,7 @@ import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { EmptyState } from '@/components/common/empty-state';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import type { SerializedFlight } from '@/types/flight';
 
 /**
  * Upcoming flights widget component
@@ -27,7 +28,7 @@ export function UpcomingFlights() {
     {
       staleTime: 30 * 1000, // 30 seconds - flight lists update frequently
     }
-  );
+  ) as { data: SerializedFlight[] | undefined; isLoading: boolean };
 
   if (isLoading) {
     return (
@@ -44,10 +45,18 @@ export function UpcomingFlights() {
   }
 
   const now = new Date();
-  const upcoming = flights
-    ?.filter((flight) => new Date(flight.scheduledDate) >= now)
-    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
-    .slice(0, 5) || [];
+  const flightsArray = flights || [];
+  const upcoming = flightsArray
+    .filter((flight) => {
+      const scheduledDate = flight.scheduledDate as string | Date;
+      return new Date(scheduledDate) >= now;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.scheduledDate as string | Date).getTime();
+      const dateB = new Date(b.scheduledDate as string | Date).getTime();
+      return dateA - dateB;
+    })
+    .slice(0, 5);
 
   return (
     <Card>

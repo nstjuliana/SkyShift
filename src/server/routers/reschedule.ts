@@ -201,8 +201,8 @@ export const rescheduleRouter = router({
             status: 'SCHEDULED',
             trainingLevel: booking.trainingLevel,
             duration: reschedule.proposedDuration,
-            departureLocation: booking.departureLocation,
-            destinationLocation: booking.destinationLocation,
+            departureLocation: booking.departureLocation as any,
+            destinationLocation: booking.destinationLocation as any,
             notes: `Rescheduled from booking ${booking.id}`,
           },
           include: {

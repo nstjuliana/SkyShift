@@ -8,6 +8,7 @@
 import { trpc } from '@/lib/trpc';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
+import type { SerializedFlight } from '@/types/flight';
 
 /**
  * Dashboard stat cards component
@@ -18,7 +19,7 @@ import { LoadingSpinner } from '@/components/common/loading-spinner';
 export function StatCards() {
   const { data: flights, isLoading } = trpc.flights.list.useQuery({
     limit: 100, // Get all flights for stats
-  });
+  }) as { data: SerializedFlight[] | undefined; isLoading: boolean };
 
   if (isLoading) {
     return (

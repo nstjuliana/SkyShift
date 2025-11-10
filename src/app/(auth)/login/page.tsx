@@ -7,15 +7,15 @@
 
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 
 /**
- * Login page component
+ * Login form component that uses search params
  * 
- * @returns Rendered login page
+ * @returns Rendered login form
  */
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
@@ -138,6 +138,25 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+/**
+ * Login page component
+ * 
+ * @returns Rendered login page with Suspense boundary
+ */
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
 

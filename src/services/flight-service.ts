@@ -235,9 +235,15 @@ class FlightService {
       // Create booking - use userId as studentId (from authenticated session)
       const flight = await db.booking.create({
         data: {
-          ...data,
           studentId: userId, // Use authenticated user's ID as studentId
+          instructorId: data.instructorId,
+          scheduledDate: data.scheduledDate,
+          trainingLevel: data.trainingLevel,
+          duration: data.duration,
+          notes: data.notes,
           status: 'SCHEDULED',
+          departureLocation: data.departureLocation as any,
+          destinationLocation: data.destinationLocation as any,
         },
         include: {
           student: {

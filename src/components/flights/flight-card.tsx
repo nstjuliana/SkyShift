@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { FlightStatusBadge } from './flight-status-badge';
 import { format } from 'date-fns';
-import type { Flight } from '@/types/flight';
+import type { SerializedFlight } from '@/types/flight';
 import type { Location } from '@/types/flight';
 
 /**
@@ -15,7 +15,7 @@ import type { Location } from '@/types/flight';
  */
 interface FlightCardProps {
   /** Flight data to display */
-  flight: Flight;
+  flight: SerializedFlight;
   /** Optional CSS class name */
   className?: string;
 }

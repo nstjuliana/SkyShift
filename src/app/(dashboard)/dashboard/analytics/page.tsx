@@ -9,6 +9,7 @@ import { trpc } from '@/lib/trpc';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { format } from 'date-fns';
+import type { SerializedFlight } from '@/types/flight';
 
 /**
  * Analytics dashboard page component
@@ -18,7 +19,7 @@ import { format } from 'date-fns';
 export default function AnalyticsPage() {
   const { data: flights, isLoading } = trpc.flights.list.useQuery({
     limit: 1000, // Get all flights for analytics
-  });
+  }) as { data: SerializedFlight[] | undefined; isLoading: boolean };
 
   if (isLoading) {
     return (

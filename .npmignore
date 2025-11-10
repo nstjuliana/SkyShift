@@ -1,0 +1,23 @@
+# Build artifacts and lambda
+lambda/
+_docs/
+*.md
+!README.md
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+

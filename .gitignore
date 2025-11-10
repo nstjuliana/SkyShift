@@ -39,3 +39,9 @@ next-env.d.ts
 # prisma
 /prisma/migrations
 
+# lambda build artifacts
+/lambda/weather-check/dist
+/lambda/weather-check/node_modules
+/lambda/function.zip
+
+node_modules

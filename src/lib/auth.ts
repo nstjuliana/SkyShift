@@ -82,6 +82,8 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
         token.role = user.role;
         token.trainingLevel = user.trainingLevel;
         token.temperatureUnit = user.temperatureUnit;
@@ -92,12 +94,21 @@ export const authOptions = {
      * Add custom fields to session from JWT token
      */
     async session({ session, token }: { session: any; token: any }) {
-      if (session.user && token) {
+      // Ensure session.user exists
+      if (!session.user) {
+        session.user = {};
+      }
+      
+      // Populate user data from token
+      if (token) {
         session.user.id = token.id as string;
-        session.user.role = token.role;
+        session.user.name = (token.name as string) || session.user.name || null;
+        session.user.email = (token.email as string) || session.user.email || null;
+        session.user.role = token.role || 'USER';
         session.user.trainingLevel = token.trainingLevel;
         session.user.temperatureUnit = token.temperatureUnit || 'FAHRENHEIT';
       }
+      
       return session;
     },
   },

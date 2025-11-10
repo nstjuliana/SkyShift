@@ -14,11 +14,11 @@ import { Button } from '@/components/ui/button';
  */
 interface DashboardHeaderProps {
   /** Current user session data */
-  user: {
+  user?: {
     name?: string | null;
     email?: string | null;
-    role: string;
-  };
+    role?: string;
+  } | null;
 }
 
 /**
@@ -37,6 +37,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     await signOut({ callbackUrl: '/login' });
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <header className="border-b bg-card">
       <div className="container flex h-16 items-center justify-between px-4">
@@ -50,9 +54,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
             <div className="text-sm">
-              <p className="font-medium">{user.name || user.email}</p>
+              <p className="font-medium">{user?.name || user?.email || 'User'}</p>
               <p className="text-xs text-muted-foreground capitalize">
-                {user.role.toLowerCase()}
+                {user?.role?.toLowerCase() || 'user'}
               </p>
             </div>
           </div>
